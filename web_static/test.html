@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Centering Wrapped Flex Divs</title>
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh; /* Ensure full viewport height */
+        margin: 0; /* Remove default body margin */
+    }
+
+    .container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        max-width: 80%; /* Optional: Set maximum width for the container */
+    }
+
+    .box {
+        width: 400px;
+        height: 100px;
+        background-color: #ccc;
+        margin: 10px; /* Adjust as needed */
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="box"></div>
+    <div class="box"></div>
+    <div class="box"></div>
+    <!-- Add more boxes as needed -->
+</div>
+
+</body>
+</html>
