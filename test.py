@@ -1,5 +1,4 @@
 import re
-import shlex
 
 # # Search for a pattern in a string
 # result = re.search(r'\b\w+@\w+\.\w+\b', 'Email me at john@example.com')
@@ -60,39 +59,63 @@ import shlex
 # if matches:
 #     print(matches)al
 
-line = 'User.update("38f22813-2753-4d42-b37c-57a17f1e4f88", {\'first_name\': "John", "age": 89})'
-pattern = r'\(.*?\)'
-parentheses = re.search(pattern, line) # search for parentheses
-if parentheses:
-    line_sub = re.sub(pattern, '', line) # Remove parentheses
-    # print(line_sub)
-    outside_parentheses = line_sub.split(".")
-    outside_parentheses.reverse()
-    # print(outside_parentheses) #1 args[0], args[1](<action>, <class>)
+# line = 'User.update("38f22813-2753-4d42-b37c-57a17f1e4f88", {\'first_name\': "John", "age": 89})'
+# pattern = r'\(.*?\)'
+# parentheses = re.search(pattern, line) # search for parentheses
+# if parentheses:
+#     line_sub = re.sub(pattern, '', line) # Remove parentheses
+#     # print(line_sub)
+#     outside_parentheses = line_sub.split(".")
+#     outside_parentheses.reverse()
+#     # print(outside_parentheses) #1 args[0], args[1](<action>, <class>)
 
-parentheses_values = re.findall(r'\((.*?)\)', line) # Search for id in parentheses
-# print(parentheses_values)
-clean_parentheses_value = re.sub(r'[\'"\[\]\\]', '', str(parentheses_values)) #remove quotes and brackets
-# print(clean_parentheses_value)
+# parentheses_values = re.findall(r'\((.*?)\)', line) # Search for id in parentheses
+# # print(parentheses_values)
+# clean_parentheses_value = re.sub(r'[\'"\[\]\\]', '', str(parentheses_values)) #remove quotes and brackets
+# # print(clean_parentheses_value)
 
-curly_braces = re.findall(r'\{(.*?)\}', clean_parentheses_value)
-if(curly_braces):
-    # print(clean_parentheses_value.split(', '))
-    id = []
-    id.append(clean_parentheses_value.split(', ')[0]) # args[2] <id>
-    clean_curly_braces = re.sub(r'[\'"\[\]]', '', str(curly_braces)) #remove quotes and brackets
-    key_value_pairs =  clean_curly_braces.split(', ')
-    for key_value_pair in key_value_pairs:
-        each_key_value = key_value_pair.split(': ') # args[3], args[4](<key> <value>)
-        args = outside_parentheses + id + each_key_value
-        args = [int(i) if i.isdigit() else i for i in args]
-        print(args)
+# curly_braces = re.findall(r'\{(.*?)\}', clean_parentheses_value)
+# if(curly_braces):
+#     # print(clean_parentheses_value.split(', '))
+#     id = []
+#     id.append(clean_parentheses_value.split(', ')[0]) # args[2] <id>
+#     clean_curly_braces = re.sub(r'[\'"\[\]]', '', str(curly_braces)) #remove quotes and brackets
+#     key_value_pairs =  clean_curly_braces.split(', ')
+#     for key_value_pair in key_value_pairs:
+#         each_key_value = key_value_pair.split(': ') # args[3], args[4](<key> <value>)
+#         args = outside_parentheses + id + each_key_value
+#         args = [int(i) if i.isdigit() else i for i in args]
+#         print(args)
 
-else:
-    inside_parentheses =  clean_parentheses_value.split(', ')
-    # print(inside_parentheses) # args[2], args[3], args[4](<id>, <key>, <value>)
-    if inside_parentheses == ['']:
-        args = outside_parentheses
-    else:
-        args = outside_parentheses + inside_parentheses
-    print(args)
+# else:
+#     inside_parentheses =  clean_parentheses_value.split(', ')
+#     # print(inside_parentheses) # args[2], args[3], args[4](<id>, <key>, <value>)
+#     if inside_parentheses == ['']:
+#         args = outside_parentheses
+#     else:
+#         args = outside_parentheses + inside_parentheses
+#     print(args)
+line = 'create Place city_id="0001" user_id="0001" name="My_little_house" number_rooms=4 number_bathrooms=2 max_guest=10 price_by_night=300 latitude=37.773972 longitude=-122.431297'
+args = ['State', 'name=California']
+def is_float_regex(str_val):
+    return bool(re.match(r'^[-+]?[0-9]*\.[0-9]+$', str_val))
+
+# pattern = r'["\']'
+# # Use re.sub to remove quotes
+# clean_args = re.sub(pattern, '', args)
+# args = clean_args.split(" ")
+kwargs = {}
+
+print(args)
+
+for i in range(1, len(args)):
+    key_value = args[i].split("=")
+    key =  key_value[0]
+    value = key_value[1]
+    if value.isdigit():
+        value = int(value)
+    elif is_float_regex(value):
+        value = float(value)
+
+    kwargs[key] = value
+print(kwargs)

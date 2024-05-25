@@ -22,8 +22,16 @@ class FileStorage:
         """Constructor"""
         pass
 
-    def all(self):
+    def all(self, cls=None):
         """Return the dictionary __object stored"""
+        if cls is not None:
+            if type(cls) == str:
+                cls = eval(cls)
+            cls_dict = {}
+            for k, v in self.__objects.items():
+                if type(v) == cls:
+                    cls_dict[k] = v
+            return cls_dict
         return FileStorage.__objects
     
     def new(self, obj):
@@ -54,3 +62,11 @@ class FileStorage:
                 }
         except FileNotFoundError:
             return
+        
+    def delete(self, obj=None):
+        """Detele a given object from __objects, if it exist, else do nothing"""
+        if obj:
+            del self.__objects["{}.{}".format(type(obj).__name__, obj.id)]
+        else:
+            pass
+

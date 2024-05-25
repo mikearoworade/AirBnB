@@ -2,10 +2,24 @@
 """Define the BaseModel class"""
 import models
 from uuid import uuid4
-from datetime import datetime
+from datetime import datetime, timezone
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, String, DateTime
+
+Base = declarative_base()
 
 class BaseModel:
-    """Represent the BaseModel of the HuheBnB"""
+    """Represent the BaseModel of the HuheBnB
+        Attributes:
+            id(sqlalchemy String): The BaseModel
+            created_at(sqlalchemy DateTime)
+            updated_at(sqlalchemy DateTime)
+    """
+    id = Column(String(60), primary_key=True, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.now(timezone.utc))
+    updated_at = Column(DateTime, nullable=False, default=datetime.now(timezone.utc))
+
     def __init__(self, *args, **kwargs):
         """Initialize a new BaseModel.
 
@@ -15,8 +29,8 @@ class BaseModel:
         """
         tformat = "%Y-%m-%dT%H:%M:%S.%f"
         self.id = str(uuid4())
-        self.created_at = datetime.today()
-        self.updated_at = datetime.today()
+        self.created_at = datetime.now(timezone.utc)
+        self.updated_at = datetime.now(timezone.utc)
         if len(kwargs) != 0:
             for key, val in kwargs.items():
                 if key == '__class__':
@@ -31,19 +45,28 @@ class BaseModel:
     def __str__(self):
         """Return string representation of an object"""
         clsname = self.__class__.__name__
-        return "[{}] ({}) {}".format(clsname, self.id, self.__dict__)
+        dic = self.__dict__.copy()
+        dic.pop("_sa_instance_state", None)
+        return "[{}] ({}) {}".format(clsname, self.id, dic)
     
     def save(self):
         """Update updated_at with the current datetime"""
-        self.updated_at = datetime.today()
+        self.updated_at = datetime.now(timezone.utc)
+        models.storage.new(self)
         models.storage.save()
 
     def to_dict(self):
         """Return a dictionary containing all keys/values of __dict__.
             This method will be the first piece of the serialization/deseriaization process. This create a dictionary representation with "simple object type" of our BaseModel.
         """
-        rdict = self.__dict__.copy()
-        rdict["created_at"] = self.created_at.isoformat() #return string
-        rdict["updated_at"] = self.updated_at.isoformat()
-        rdict["__class__"] = self.__class__.__name__
-        return rdict
+        my_dict = self.__dict__.copy()
+        my_dict["created_at"] = self.created_at.isoformat() #return string
+        my_dict["updated_at"] = self.updated_at.isoformat()
+        my_dict["__class__"] = self.__class__.__name__
+        if '_sa_instance_state' in my_dict.keys():
+            del my_dict['_sa_instance_state']
+        return my_dict
+    
+    def delete(self):
+        """Delete current instance from storage"""
+        models.storage.delete(self)

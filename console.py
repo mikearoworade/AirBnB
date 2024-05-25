@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 """This file contains the entry point of the command interpreter (console)"""
 import cmd
 import shlex
@@ -15,6 +16,9 @@ def parse(line):
     """Split a line by spaces into a list"""
     args = shlex.split(line)
     return args, len(args)
+
+def is_float_regex(str_val):
+    return bool(re.match(r'^[-+]?[0-9]*\.[0-9]+$', str_val))
 
 class HugeBnBCommand(cmd.Cmd):
     """
@@ -99,21 +103,42 @@ class HugeBnBCommand(cmd.Cmd):
                 print("** Unknown syntax: {} **".format(args))
 
     def do_create(self, args):
-        """Usage: create <class>
-        Create a new class instance and print its id
+        """Usage: create <class> <key 1>=<value 2> <key 2>=<value 2> ...
+        Create a new class instance with given keys/values and print its id.
         """
-        args, n = parse(args)
+        try:
+            if not args:
+                raise SyntaxError()
+            
+            args, n = parse(args)
+            kwargs = {}
 
-        if n == 0:
-            print("** class name missing **")
-        elif args[0] not in HugeBnBCommand.__classes:
-             print("** class name does not exit **")
-        elif n == 1:
-            obj = eval(args[0])()
+            if args[0] not in HugeBnBCommand.__classes:
+                print("** class name does not exit **")
+
+            for i in range(1, len(args)):
+                key_value = args[i].split("=")
+                key =  key_value[0]
+                value = key_value[1]
+                if value.isdigit():
+                    value = int(value)
+                elif is_float_regex(value):
+                    value = float(value)
+
+                kwargs[key] = value
+
+            if kwargs == {}:
+                obj = eval(args[0])()
+            else:
+                obj = eval(args[0])(**kwargs)
+                storage.new(obj)
             print(obj.id)
-            obj.save()
-        else:
-             print("** To many argument **")
+            obj.save()  
+
+        except SyntaxError:
+            print("** class name missing **")
+        except NameError:
+            print("** class doesn't exist **")
 
     def do_show(self, args):
         """Print the string representation of an instance based on class name and id"""
@@ -155,23 +180,23 @@ class HugeBnBCommand(cmd.Cmd):
 
     def do_all(self, args):
         """Prints all string representation of all instances of a given class. If no class is specified, displays all instantiated objects."""
+        if not args:
+            obj = storage.all()
+            print([obj[key].__str__() for key in obj])
+            return
         args, n = parse(args)
-        objdict = storage.all()
-        objstr = []
+        
+        try:
+            if args[0] not in HugeBnBCommand.__classes:
+                raise NameError()
+            elif n > 1:
+                print("** To many argument **")
 
-        if n == 1 and args[0] not in HugeBnBCommand.__classes:
+            obj = storage.all(eval(args[0]))
+            print([obj[key].__str__() for key in obj])
+            
+        except NameError:
             print("** class doesn't exist **")
-        elif n > 1:
-            print("** To many argument **")
-        elif n == 0:
-            for val in objdict.values():
-                objstr.append(val.__str__())
-        else:
-            for val in objdict.values():
-                if n == 1 and args[0] == val.__class__.__name__:
-                   objstr.append(val.__str__())
-        if objstr != []: 
-            print(objstr)
 
     def do_update(self, args):
         """update: update [ARG] [ARG1] [ARG2] [ARG3]
