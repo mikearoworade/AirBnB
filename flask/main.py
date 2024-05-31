@@ -6,17 +6,21 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///country.db'
 db = SQLAlchemy(app)
 
+
 @app.route('/')
 def hello_word():
     return 'Hello, World!'
+
 
 @app.route('/simple')
 def simple():
     return jsonify(text='Hello Simple World!', message='Hello Boss')
 
+
 @app.route('/not_found')
 def not_found():
     return jsonify(error='This route was not found'), 404
+
 
 @app.route('/parameters')
 def parameters():
@@ -26,13 +30,15 @@ def parameters():
         return jsonify(message=f"Wecome {name}!!!")
     else:
         return jsonify(message=f"Sorry {name}, you are not old enough to access this API.")
-    
+
+
 @app.route('/api-variables/<string:name>/<int:age>')
 def api_variables(name:str, age:int):
     if age > 18:
         return jsonify(message=f"Wecome {name}!!!")
     else:
         return jsonify(message=f"Sorry {name}, you are not old enough to access this API.")
+
 
 # Database
 class User(db.Model):
@@ -51,10 +57,12 @@ class Country(db.Model):
     capital =Column(String)
     area = Column(Float)
 
+
 @app.cli.command('db_create')
 def db_create():
     db.create_all()
     print("Database Created..")
+
 
 @app.cli.command('db_drop')
 def db_drop():
@@ -77,6 +85,7 @@ def db_seed():
     db.session.commit()
     print("Datatbase Seeded...")
 
+
 @app.cli.command('get_countries')
 def get_countries():
     fields = ['country_id', 'country_name', 'capital', 'area']
@@ -92,6 +101,7 @@ def get_countries():
         kwargs = {}
     print(api_data)
 
+
 @app.cli.command('get_country')
 def get_country():
     country_id = 1
@@ -103,6 +113,7 @@ def get_country():
             value = getattr(country, field)
             kwargs[field] = value
         return kwargs
+
 
 # @app.route('/countries', methods=['GET'])
 @app.get('/countries',)
@@ -120,6 +131,7 @@ def countries():
         kwargs = {}
     return jsonify(api_data)
 
+
 @app.route('/country_details/<int:country_id>', methods=["GET"])
 def country_details(country_id: int):
     fields = ['country_id', 'country_name', 'capital', 'area']
@@ -131,6 +143,7 @@ def country_details(country_id: int):
             kwargs[field] = value
         return jsonify(kwargs)
     return jsonify("That country does not exist!"), 404
+
 
 # @app.route('/add_country', methods=["POST"])
 @app.post('/add_country')
@@ -145,6 +158,7 @@ def add_country():
     db.session.add(new_country)
     db.session.commit()
     return jsonify(message="You added a new country."), 201
+
 
 @app.route('/add_country1', methods=["POST"])
 def add_country1():
@@ -162,6 +176,7 @@ def add_country1():
     db.session.commit()
     return jsonify(message="You added a new country."), 201
 
+
 @app.route('/countries/<int:country_id>', methods=['PATCH'])
 def update_country(country_id):
     data = request.get_json()
@@ -177,6 +192,7 @@ def update_country(country_id):
     db.session.commit()
     return jsonify({"message": "Country updated successfully", "country_id":country_id}), 200
 
+
 @app.route('/remove_country/<int:country_id>', methods=['DELETE'])
 def remove_country(country_id):
     country = Country.query.filter_by(country_id=country_id).first()
@@ -185,6 +201,7 @@ def remove_country(country_id):
     db.session.delete(country)
     db.session.commit()
     return jsonify(message=f"You deleted a country with id of {country_id}"), 202   
+
 
 if __name__ == '__main__':
     app.run()

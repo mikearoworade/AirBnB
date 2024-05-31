@@ -1,14 +1,17 @@
 from flask import jsonify, request
 from app.init import app, db, auth
 from app.models.country import Country
+from flask_jwt_extended import jwt_required
+
 
 @app.route('/')
 def hello():
     return "Hello World!"
 
+
 # @app.route('/countries', methods=['GET'])
 @app.get('/countries')
-# @auth.login_required()
+@auth.login_required
 def countries():
     fields = ['country_id', 'country_name', 'capital', 'area']
     api_data = []
@@ -23,7 +26,9 @@ def countries():
         kwargs = {}
     return jsonify(api_data)
 
+
 @app.route('/country_details/<int:country_id>', methods=["GET"])
+@jwt_required()
 def country_details(country_id: int):
     fields = ['country_id', 'country_name', 'capital', 'area']
     kwargs = {}
@@ -34,6 +39,7 @@ def country_details(country_id: int):
             kwargs[field] = value
         return jsonify(kwargs)
     return jsonify("That country does not exist!"), 404
+
 
 # @app.route('/add_country', methods=["POST"])
 @app.post('/add_country')
@@ -48,6 +54,7 @@ def add_country():
     db.session.add(new_country)
     db.session.commit()
     return jsonify(message="You added a new country."), 201
+
 
 @app.route('/add_country1', methods=["POST"])
 def add_country1():
@@ -65,6 +72,7 @@ def add_country1():
     db.session.commit()
     return jsonify(message="You added a new country."), 201
 
+
 @app.route('/countries/<int:country_id>', methods=['PATCH'])
 def update_country(country_id):
     data = request.get_json()
@@ -79,6 +87,7 @@ def update_country(country_id):
         country.country_name = data['area']
     db.session.commit()
     return jsonify({"message": "Country updated successfully", "country_id":country_id}), 200
+
 
 @app.route('/remove_country/<int:country_id>', methods=['DELETE'])
 def remove_country(country_id):

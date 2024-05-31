@@ -2,10 +2,12 @@ from app.init import app, db
 from app.models.country import Country
 from app.models.user import User
 
+
 @app.cli.command('db_create')
 def db_create():
     db.create_all()
     print("Database Created..")
+
 
 @app.cli.command('db_drop')
 def db_drop():
@@ -28,6 +30,7 @@ def db_seed():
     db.session.commit()
     print("Datatbase Seeded...")
 
+
 @app.cli.command('get_countries')
 def get_countries():
     fields = ['country_id', 'country_name', 'capital', 'area']
@@ -42,6 +45,7 @@ def get_countries():
         api_data.append(kwargs)
         kwargs = {}
     print(api_data)
+
 
 @app.cli.command('get_country')
 def get_country():
