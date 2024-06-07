@@ -18,11 +18,10 @@ from sqlalchemy.orm import relationship
 
 STORAGE_TYPE = getenv('HBNB_TYPE_STORAGE')
 
-if STORAGE_TYPE == "db":
-    association_table = Table('place_amenity', Base.metadata,
-        Column('place_id', String(60), ForeignKey('places.id'), primary_key=True),
-        Column('amenity_id', String(60), ForeignKey('amenities.id'), primary_key=True)
-    )
+association_table = Table('place_amenity', Base.metadata,
+    Column('place_id', String(60), ForeignKey('places.id'), primary_key=True),
+    Column('amenity_id', String(60), ForeignKey('amenities.id'), primary_key=True)
+)
 
 class Place(BaseModel, Base):
     """Represents a Place for a MySQL database.
@@ -45,39 +44,24 @@ class Place(BaseModel, Base):
         amenities (sqlalchemy relationship): The Place-Amenity relationship.
         amenity_ids (list): An id list of all linked amenities.
     """
-    if STORAGE_TYPE == "db":
-        __tablename__ = "places"
-        city_id = Column(String(60), ForeignKey("cities.id"), nullable=False)
-        user_id = Column(String(60), ForeignKey("users.id"), nullable=False)
-        name = Column(String(128), nullable=False)
-        description = Column(String(1024))
-        number_rooms = Column(Integer, default=0)
-        number_bathrooms = Column(Integer, default=0)
-        max_guest = Column(Integer, default=0)
-        price_by_night = Column(Integer, default=0)
-        latitude = Column(Float)
-        longitude = Column(Float)
-        amenity_ids = []
-        users = relationship("User", back_populates="places")
-        cities = relationship("City", back_populates="places")
-        reviews = relationship("Review", back_populates="places", cascade="all, delete-orphan")
-        amenities = relationship("Amenity", secondary=association_table, back_populates="places") # Many to many #secondary="place_amenity"
+    __tablename__ = "places"
+    city_id = Column(String(60), ForeignKey("cities.id"), nullable=False)
+    user_id = Column(String(60), ForeignKey("users.id"), nullable=False)
+    name = Column(String(128), nullable=False)
+    description = Column(String(1024))
+    number_rooms = Column(Integer, default=0)
+    number_bathrooms = Column(Integer, default=0)
+    max_guest = Column(Integer, default=0)
+    price_by_night = Column(Integer, default=0)
+    latitude = Column(Float)
+    longitude = Column(Float)
+    amenity_ids = []
+    users = relationship("User", back_populates="places")
+    cities = relationship("City", back_populates="places")
+    reviews = relationship("Review", back_populates="places", cascade="all, delete-orphan")
+    amenities = relationship("Amenity", secondary=association_table, back_populates="places") # Many to many #secondary="place_amenity"
 
-    else:
-        city_id = ''
-        user_id = ''
-        name = ''
-        description = ''
-        number_rooms = 0
-        number_bathrooms = 0
-        max_guest = 0
-        price_by_night = 0
-        latitude = 0.0
-        longitude = 0.0
-        amenity_ids = []
-        review_ids = []
-
-
+    if getenv("HBNB_TYPE_STORAGE", None) != "db":
         @property
         def reviews(self):
             """Get a list of all linked Reviews."""

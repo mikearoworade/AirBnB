@@ -1,12 +1,9 @@
 #!/usr/bin/python3
 import json
-from models.base_model import BaseModel
-from models.user import User
-from models.state import State
-from models.city import City
-from models.place import Place
-from models.amenity import Amenity
-from models.review import Review
+from models import base_model, amenity, city, place, review, state, user
+from datetime import datetime
+
+strptime = datetime.strptime
 
 class FileStorage:
     """Represents an abstracted storage engine
@@ -17,6 +14,20 @@ class FileStorage:
     """
     __file_path = "file.json" # Private class attribute
     __objects = {} # Empty instantiated object
+
+    """CNC - this variable is a dictionary with:
+    keys: Class Names
+    values: Class type (used for instantiation)
+    """
+    CNC = {
+        'BaseModel': base_model.BaseModel,
+        'Amenity': amenity.Amenity,
+        'City': city.City,
+        'Place': place.Place,
+        'Review': review.Review,
+        'State': state.State,
+        'User': user.User
+    }
 
     def __init__(self):
         """Constructor"""
@@ -53,15 +64,16 @@ class FileStorage:
 
     def reload(self):
         """Deserialize the JSON file to __objects, if __file_path exists, else do nothing"""
+        fname = FileStorage.__file_path
+        FileStorage.__objects = {}
         try:
-            with open(FileStorage.__file_path) as f:
-                objdict = json.load(f)
-                FileStorage.__objects = {
-                    key: eval(val["__class__"])(**val)
-                    for key, val in objdict.items()
-                }
-        except FileNotFoundError:
+            with open(fname, mode='r', encoding='utf-8') as f_obj:
+                loaded_objs = json.load(f_obj)
+        except:
             return
+        for obj_id, dict_val in loaded_objs.items():
+            clsname = dict_val['__class__']
+            FileStorage.__objects[obj_id] = FileStorage.CNC[clsname](**dict_val)
         
     def delete(self, obj=None):
         """Detele a given object from __objects, if it exist, else do nothing"""
@@ -69,4 +81,8 @@ class FileStorage:
             del self.__objects["{}.{}".format(type(obj).__name__, obj.id)]
         else:
             pass
+
+    def close(self):
+        """Call the reload method."""
+        self.reload()
 

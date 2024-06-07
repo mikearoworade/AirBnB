@@ -7,6 +7,8 @@ from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.orm import relationship
 from os import getenv
 
+STORAGE_TYPE = getenv('HBNB_TYPE_STORAGE')
+
 class State(BaseModel, Base):
     """Represents a state for a MySQL database.
 
@@ -17,11 +19,13 @@ class State(BaseModel, Base):
         name (sqlalchemy String): The name of the State.
         cities (sqlalchemy relationship): The State-City relationship.
     """
-    __tablename__ = "states"
-    name = Column(String(128), nullable=False)   
-    cities = relationship("City", back_populates="state", cascade="all, delete-orphan") # One to many relationship
+    if STORAGE_TYPE == "db":
+        __tablename__ = "states"
+        name = Column(String(128), nullable=False)   
+        cities = relationship("City", back_populates="state", cascade="all, delete-orphan") # One to many relationship
+    else:
+        name = ""
 
-    if getenv("HBNB_TYPE_STORAGE") != 'db':
         @property
         def cities(self):
             """Get a list of all related City objects"""
